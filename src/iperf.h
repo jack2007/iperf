@@ -83,6 +83,9 @@ typedef atomic_uint_fast64_t atomic_iperf_size_t;
 typedef unsigned int uint
 #endif // __vxworks or __VXWORKS__
 
+
+
+
 struct iperf_sctp_info
 {
     long rtt;
@@ -152,6 +155,23 @@ struct iperf_stream_result
     void     *data;
 };
 
+
+#define GSO_BF_MAX_SIZE 64000
+#define GSO_DEF 0
+
+#ifndef UDP_SEGMENT
+#define UDP_SEGMENT 103
+#endif
+
+
+#define GRO_DEF 0
+#define GRO_BF_MAX_SIZE 65535
+
+#ifndef UDP_GRO
+#define UDP_GRO 104
+#endif
+
+
 #define COOKIE_SIZE 37		/* size of an ascii uuid */
 struct iperf_settings
 {
@@ -184,6 +204,13 @@ struct iperf_settings
     int       idle_timeout;         /* server idle time timeout */
     unsigned int snd_timeout; /* Timeout for sending tcp messages in active mode, in us */
     struct iperf_time rcv_timeout;  /* Timeout for receiving messages in active mode, in us */
+
+    int       gso;					/* 0 or 1, if gso is enable */
+    int       gso_dg_size;
+    int       gso_bf_size;
+    int       gro;					/* 0 or 1, if gro is enable */
+    int       gro_bf_size;
+
 };
 
 struct iperf_test;
