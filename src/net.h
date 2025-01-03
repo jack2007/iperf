@@ -1,4 +1,4 @@
-/*
+﻿/*
  * iperf, Copyright (c) 2014, 2017, The Regents of the University of
  * California, through Lawrence Berkeley National Laboratory (subject
  * to receipt of any required approvals from the U.S. Dept. of
@@ -39,6 +39,9 @@ int Nsendfile(int fromfd, int tofd, const char *buf, size_t count) /* __attribut
 int setnonblocking(int fd, int nonblocking);
 int getsockdomain(int sock);
 int parse_qos(const char *tos);
+
+int Nread_gro(int fd, char *buf, size_t count, int prot, int *dgram_sz);
+int Nwrite_gso(int fd, const char *buf, size_t count, int prot, uint16_t gso_size);
 
 #define NET_SOFTERROR -1
 #define NET_HARDERROR -2

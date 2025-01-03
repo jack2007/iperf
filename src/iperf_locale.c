@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------
+﻿/*---------------------------------------------------------------
  * iperf, Copyright (c) 2014-2022, The Regents of the University of
  * California, through Lawrence Berkeley National Laboratory (subject
  * to receipt of any required approvals from the U.S. Dept. of
@@ -104,6 +104,7 @@ const char usage_longstr[] = "Usage: iperf3 [-s|-c host] [options]\n"
                            "  -i, --interval  #         seconds between periodic throughput reports\n"
                            "  -I, --pidfile file        write PID file\n"
                            "  -F, --file name           xmit/recv the specified file\n"
+						   "  --gsro 			xmit/recv with gso/gro support\n"                           
 #if defined(HAVE_CPU_AFFINITY)
                            "  -A, --affinity n[,m]      set CPU affinity core number to n (the core the process will use)\n"
                           "                             (optional Client only m - the Server's core number for this test)\n"
