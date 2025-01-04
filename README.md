@@ -1,6 +1,6 @@
-#iperf3 With UDP GSO/GRO support
+# iperf3 With UDP GSO/GRO support
 ================================================================
-##Build
+## Build
 1. clone repository
    git clone https://github.com/jack2007/iperf.git
 2. compile and install
@@ -10,7 +10,7 @@
    make install
    
 
-##Usage
+## Usage
 add --gsro options to server and client
 
 Server  
