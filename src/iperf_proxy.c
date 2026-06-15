@@ -41,6 +41,8 @@ read_full(int fd, void *buf, size_t len)
 
     while (len > 0) {
         got = read(fd, p, len);
+        if (got < 0 && errno == EINTR)
+            continue;
         if (got <= 0)
             return -1;
         p += got;
@@ -57,6 +59,8 @@ write_full(int fd, const void *buf, size_t len)
 
     while (len > 0) {
         sent = write(fd, p, len);
+        if (sent < 0 && errno == EINTR)
+            continue;
         if (sent <= 0)
             return -1;
         p += sent;

@@ -9,6 +9,7 @@
  */
 
 #include <assert.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,15 @@
 
 #include "iperf.h"
 #include "iperf_proxy.h"
+
+static volatile sig_atomic_t got_alarm;
+
+static void
+alarm_handler(int signo)
+{
+    (void) signo;
+    got_alarm = 1;
+}
 
 static void
 clear_settings(struct iperf_settings *settings)
@@ -117,6 +127,36 @@ socks5_proxy_stub(int fd)
 }
 
 static void
+socks5_delayed_proxy_stub(int fd)
+{
+    unsigned char greeting[3];
+    unsigned char method_reply[] = { 0x05, 0x00 };
+    unsigned char header[5];
+    unsigned char host[14];
+    unsigned char port[2];
+    unsigned char success[] = {
+        0x05, 0x00, 0x00, 0x01,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00
+    };
+
+    read_exact(fd, greeting, sizeof(greeting));
+    assert(memcmp(greeting, "\x05\x01\x00", sizeof(greeting)) == 0);
+    usleep(200000);
+    write_exact(fd, method_reply, sizeof(method_reply));
+
+    read_exact(fd, header, sizeof(header));
+    assert(memcmp(header, "\x05\x01\x00\x03\x0e", sizeof(header)) == 0);
+    read_exact(fd, host, sizeof(host));
+    assert(memcmp(host, "target.example", sizeof(host)) == 0);
+    read_exact(fd, port, sizeof(port));
+    assert(port[0] == 0x14);
+    assert(port[1] == 0x51);
+
+    write_exact(fd, success, sizeof(success));
+}
+
+static void
 http_proxy_stub(int fd)
 {
     char request[256];
@@ -169,6 +209,30 @@ test_proxy_handshake(void)
     clear_settings(&settings);
 }
 
+static void
+test_proxy_handshake_retries_after_eintr(void)
+{
+    struct sigaction sa;
+    struct sigaction old_sa;
+    struct iperf_settings settings;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = alarm_handler;
+    sigemptyset(&sa.sa_mask);
+    assert(sigaction(SIGALRM, &sa, &old_sa) == 0);
+
+    memset(&settings, 0, sizeof(settings));
+    assert(iperf_parse_proxy_url("socks5://127.0.0.1:1080", &settings) == 0);
+    got_alarm = 0;
+    ualarm(20000, 0);
+    run_proxy_stub(socks5_delayed_proxy_stub, &settings);
+    assert(got_alarm == 1);
+    ualarm(0, 0);
+    clear_settings(&settings);
+
+    assert(sigaction(SIGALRM, &old_sa, NULL) == 0);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -177,5 +241,6 @@ main(int argc, char **argv)
 
     test_parse_proxy_url();
     test_proxy_handshake();
+    test_proxy_handshake_retries_after_eintr();
     return 0;
 }
