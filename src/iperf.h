@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #ifndef _GNU_SOURCE
